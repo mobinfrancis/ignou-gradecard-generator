@@ -1,6 +1,7 @@
 package utils;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import org.openqa.selenium.By;
@@ -17,80 +18,76 @@ import io.github.bonigarcia.wdm.WebDriverManager;
 import pages.pageMethods;
 import testData.App;
 
-public class baseTest
-{
-	public WebDriver driver;
-	
-	public void launchIGNOUResultsPage()
-	{
+public class baseTest {
+	public static WebDriver driver;
+
+	public void launchIGNOUResultsPage() {
 		WebDriverManager.chromedriver().setup();
 		driver = new ChromeDriver();
 		driver.manage().window().maximize();
 		driver.get(App.baseURL);
-		
+
 	}
-	
-	public void getResult(String course,String rollno) throws InterruptedException
-	{
-		driver.findElement(By.xpath("//a[contains(text(),'"+course+"')]")).click();
+
+	public void getResult(String course, String rollno) throws InterruptedException {
+		driver.findElement(By.xpath("//a[contains(text(),'" + course + "')]")).click();
 		Thread.sleep(2000);
-		Set<String>s=driver.getWindowHandles();
-		Iterator<String> iterator= s.iterator();
-		while(iterator.hasNext())
-			{
-			String child_window=iterator.next();
+		Set<String> s = driver.getWindowHandles();
+		Iterator<String> iterator = s.iterator();
+		while (iterator.hasNext()) {
+			String child_window = iterator.next();
 			driver.switchTo().window(child_window);
 			driver.switchTo().window(child_window);
-			}
-		
-		if(driver.getTitle().contains("500"))
-			{
+		}
+
+		if (driver.getTitle().contains("500")) {
 			Assert.fail("[INFO] IGNOU Site is Down, Please try again later");
-			}
-		else
-			{
+		} else {
 			System.out.println("[INFO] Launched IGNOU Results Site successfully.");
-			}
-		dropDownSelectionByValue(driver,pageMethods.selectProgramDropDown,course);
-		enterValue(driver,pageMethods.rollNo,rollno);
-		clickElement(driver,pageMethods.submit);
+		}
+		dropDownSelectionByValue(driver, pageMethods.selectProgramDropDown, course);
+		enterValue(driver, pageMethods.rollNo, rollno);
+		clickElement(driver, pageMethods.submit);
+
+		pageMethods.stripCandidateDetailsFromGC();
+		List<WebElement> totalSub = driver.findElements(pageMethods.totalSubjects);
+		System.out.println("Total Subects are: " + (totalSub.size() - 1));
+		pageMethods.printFailedSubjects();
+
 	}
-	//For selecting value from dropdown
+
+	// For selecting value from dropdown
 	public static void dropDownSelectionByValue(WebDriver driver, By dropDownID, String dropDownValue) {
 		try {
 			WebElement element = null;
-			new WebDriverWait(driver, 5)
-				.ignoring(StaleElementReferenceException.class)
-				.until(ExpectedConditions.elementToBeClickable(dropDownID));
+			new WebDriverWait(driver, 5).ignoring(StaleElementReferenceException.class)
+					.until(ExpectedConditions.elementToBeClickable(dropDownID));
 			element = driver.findElement(dropDownID);
 			Select dropDown = new Select(element);
 			dropDown.selectByValue(dropDownValue);
-			System.out.println("[INFO] Selected course is: "+dropDownValue);
-		}
-		catch (StaleElementReferenceException ex) {
+			System.out.println("[INFO] Selected course is: " + dropDownValue);
+		} catch (StaleElementReferenceException ex) {
 			System.out.println("Exception while selecting a value from dropdown" + ex.getMessage());
 		}
-  
-}	//For sendKeys
-	public static void enterValue(WebDriver driver,By elementToSend,String txtToSend)
-	  {
+
+	} // For sendKeys
+
+	public static void enterValue(WebDriver driver, By elementToSend, String txtToSend) {
 		WebElement element = null;
-		new WebDriverWait(driver, 5)
-			.ignoring(StaleElementReferenceException.class)
-			.until(ExpectedConditions.elementToBeClickable(elementToSend));
-		element = driver.findElement(elementToSend); 
+		new WebDriverWait(driver, 5).ignoring(StaleElementReferenceException.class)
+				.until(ExpectedConditions.elementToBeClickable(elementToSend));
+		element = driver.findElement(elementToSend);
 		element.sendKeys(txtToSend);
-		System.out.println("[INFO] Entered Roll Number is : "+txtToSend);
-	  }
-	//For clicking
-	public static void clickElement(WebDriver driver,By elementToClick)
-	  {
+		System.out.println("[INFO] Entered Roll Number is : " + txtToSend);
+	}
+
+	// For clicking
+	public static void clickElement(WebDriver driver, By elementToClick) {
 		WebElement element = null;
-		new WebDriverWait(driver, 5)
-			.ignoring(StaleElementReferenceException.class)
-			.until(ExpectedConditions.elementToBeClickable(elementToClick));
-		element = driver.findElement(elementToClick); 
+		new WebDriverWait(driver, 5).ignoring(StaleElementReferenceException.class)
+				.until(ExpectedConditions.elementToBeClickable(elementToClick));
+		element = driver.findElement(elementToClick);
 		element.click();
-		
-}
+
+	}
 }
